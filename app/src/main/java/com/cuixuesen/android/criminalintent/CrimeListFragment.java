@@ -1,6 +1,9 @@
 package com.cuixuesen.android.criminalintent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +23,14 @@ import java.text.DateFormat;
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
+    private static final String TAG = "CrimeListFragment";
     private RecyclerView mCrimeRecyclerView;
 
     private CrimeAdapter mAdapter;
+
+    private static final int REQUEST_CRIME = 1;
+
+    private static int mCrimeIndex;
 
     @Nullable
     @Override
@@ -59,7 +67,10 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT).show();
+            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            mCrimeIndex = getAdapterPosition();
+            startActivityForResult(intent, REQUEST_CRIME);
         }
     }
 
@@ -89,6 +100,7 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull CrimeHolder holder, int position) {
             Crime crime = mCrimes.get(position);
+            Log.d(TAG, "onBindViewHolder: ");
             holder.bind(crime);
         }
 
@@ -112,7 +124,29 @@ public class CrimeListFragment extends Fragment {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
-        mAdapter = new CrimeAdapter((crimes));
-        mCrimeRecyclerView.setAdapter(mAdapter);
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter((crimes));
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        } else {
+            // 重绘当前可见区域
+//            mAdapter.notifyDataSetChanged();
+            mAdapter.notifyItemChanged(mCrimeIndex);
+        }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        Log.d(TAG, "onActivityResult: " + requestCode + " " +resultCode);
+//        if (requestCode == REQUEST_CRIME) {
+//            if (resultCode == Activity.RESULT_OK) {
+//                Log.d(TAG, data.getStringExtra("data"));
+//            }
+//        }
+//    }
 }
