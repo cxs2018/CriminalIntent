@@ -129,9 +129,9 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter((crimes));
             mCrimeRecyclerView.setAdapter(mAdapter);
         } else {
-            // 重绘当前可见区域
-//            mAdapter.notifyDataSetChanged();
-            mAdapter.notifyItemChanged(mCrimeIndex);
+            // 重绘当前可见区域，用了 ViewPaper 后，有可能改变多个crime
+            mAdapter.notifyDataSetChanged();
+//            mAdapter.notifyItemChanged(mCrimeIndex);
         }
     }
 
