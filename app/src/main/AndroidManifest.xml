@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CriminalIntent">
-        <activity android:name=".CrimePaperActivity"></activity>
+        <activity android:name=".CrimePaperActivity" android:parentActivityName=".CrimeListActivity"></activity>
         <activity android:name=".SingleFragmentActivity" />
         <activity android:name=".CrimeActivity"></activity>
         <activity android:name=".CrimeListActivity">
