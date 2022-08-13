@@ -151,6 +151,10 @@ public class CrimeListFragment extends Fragment {
                 return -1;
             }
         }
+
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
+        }
     }
 
     private void updateUI() {
@@ -161,6 +165,7 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter((crimes));
             mCrimeRecyclerView.setAdapter(mAdapter);
         } else {
+            mAdapter.setCrimes(crimes);
             // 重绘当前可见区域，用了 ViewPaper 后，有可能改变多个crime
             mAdapter.notifyDataSetChanged();
 //            mAdapter.notifyItemChanged(mCrimeIndex);
@@ -252,4 +257,5 @@ public class CrimeListFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putBoolean(SAVED_SUBTITLE_VISIBLE, mSubtitleVisible);
     }
+
 }
