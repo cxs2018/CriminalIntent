@@ -15,4 +15,14 @@
         <item quantity="other">%1$d crimes</item>
     </plurals>
     <string name="null_crime_list">Crime records are not available</string>
+    <string name="crime_suspect_text">Choose Suspect</string>
+    <string name="crime_report_text">Send Crime Report</string>
+    <string name="crime_report">%1$s! The crime was disconnected on %2$s. %3$s, and %4$s</string>
+    <string name="crime_report_solved">The crime is solved</string>
+    <string name="crime_report_unsolved">The case is not solved</string>
+    <string name="crime_report_no_suspect">there is no suspect.</string>
+    <string name="crime_report_suspect">ths suspect is %s.</string>
+    <string name="crime_report_subject">CriminalIntent Crime Report</string>
+    <string name="send_report">Send Crime report via</string>
+    <string name="call_suspect">Call Suspect</string>
 </resources>
