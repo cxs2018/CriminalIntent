@@ -10,6 +10,7 @@ import com.cuixuesen.android.criminalintent.database.CrimeCursorWrapper;
 import com.cuixuesen.android.criminalintent.database.CrimeDbSchema;
 import com.cuixuesen.android.criminalintent.database.CrimeDbSchema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -130,5 +131,10 @@ public class CrimeLab {
         );
 
         return new CrimeCursorWrapper(cursor);
+    }
+
+    public File getPhotoFile(Crime crime) {
+        File filesDir = mContext.getFilesDir();
+        return new File(filesDir, crime.getPhotoFilename());
     }
 }
