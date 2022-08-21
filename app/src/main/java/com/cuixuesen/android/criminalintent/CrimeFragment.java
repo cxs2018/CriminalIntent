@@ -3,6 +3,7 @@ package com.cuixuesen.android.criminalintent;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -85,6 +86,8 @@ public class CrimeFragment extends Fragment {
     private File mPhotoFile;
     private ViewTreeObserver mPhotoObserver;
 
+    private Callbacks mCallbacks;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,6 +116,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -139,6 +143,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                updateCrime();
             }
         });
 
@@ -272,10 +277,12 @@ public class CrimeFragment extends Fragment {
         if (requestCode == REQUEST_DATE) {
             Date date = (Date)data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
+            updateCrime();
             updateDate();
         } else if (requestCode == REQUEST_TIME) {
             Date date = (Date)data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
             mCrime.setDate(date);
+            updateCrime();
             updateDate();
         } else if (requestCode == REQUEST_CONTACT && data != null) {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getActivity().checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -288,6 +295,8 @@ public class CrimeFragment extends Fragment {
             Uri uri = FileProvider.getUriForFile(getActivity(), "com.cuixuesen.android.criminalintent.fileprovider", mPhotoFile);
 
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            updateCrime();
 
 //            updatePhotoView();
         }
@@ -332,6 +341,8 @@ public class CrimeFragment extends Fragment {
                 mCrime.setPhone(mPhone);
                 mCallButton.setText("call: " + mPhone);
             }
+
+            updateCrime();
         } finally {
             c.close();
         }
@@ -405,5 +416,29 @@ public class CrimeFragment extends Fragment {
             Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), width, height);
             mPhotoView.setImageBitmap(bitmap);
         }
+    }
+
+    /**
+     * Required interface for hosting activities
+     */
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks)context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 }

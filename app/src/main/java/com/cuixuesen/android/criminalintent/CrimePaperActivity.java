@@ -16,7 +16,7 @@ import android.widget.Button;
 import java.util.List;
 import java.util.UUID;
 
-public class CrimePaperActivity extends AppCompatActivity {
+public class CrimePaperActivity extends AppCompatActivity implements CrimeFragment.Callbacks{
     private static final String EXTRA_CRIME_ID = "com.cuixuesen.android.criminalintent.crime_id";
 
     private ViewPager mViewPager;
@@ -104,4 +104,8 @@ public class CrimePaperActivity extends AppCompatActivity {
         return intent;
     }
 
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
+    }
 }

@@ -1,6 +1,7 @@
 package com.cuixuesen.android.criminalintent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,12 +20,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.circularreveal.CircularRevealLinearLayout;
 
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
@@ -45,6 +48,7 @@ public class CrimeListFragment extends Fragment {
 
     private Button mNewCrimeButton;
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +66,8 @@ public class CrimeListFragment extends Fragment {
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
         }
 
-        mNullCrimeListTextView = (TextView)view.findViewById(R.id.null_crime_list);
-        mNewCrimeButton = (Button)view.findViewById(R.id.new_crime);
+        mNullCrimeListTextView = (TextView) view.findViewById(R.id.null_crime_list);
+        mNewCrimeButton = (Button) view.findViewById(R.id.new_crime);
         mNewCrimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +76,11 @@ public class CrimeListFragment extends Fragment {
         });
 
         updateUI();
+
+        // 调用ItemTouchHelper
+        ItemTouchCallback callback = new ItemTouchCallback(mAdapter);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(mCrimeRecyclerView);
 
         return view;
     }
@@ -87,7 +96,7 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(this);
             mTitleTextView = (TextView) itemView.findViewById(R.id.crime_title);
             mDateTextView = (TextView) itemView.findViewById(R.id.crime_date);
-            mSolvedImageView = (ImageView)itemView.findViewById(R.id.crime_solved);
+            mSolvedImageView = (ImageView) itemView.findViewById(R.id.crime_solved);
         }
 
         public void bind(Crime crime) {
@@ -101,13 +110,14 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View v) {
 //            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT).show();
 //            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
-            Intent intent = CrimePaperActivity.newIntent(getActivity(), mCrime.getId());
-            mCrimeIndex = getAdapterPosition();
-            startActivityForResult(intent, REQUEST_CRIME);
+//            Intent intent = CrimePaperActivity.newIntent(getActivity(), mCrime.getId());
+//            mCrimeIndex = getAdapterPosition();
+//            startActivityForResult(intent, REQUEST_CRIME);
+            mCallbacks.onCrimeSelected(mCrime);
         }
     }
 
-    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
+    public class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> implements IOperationData {
         private List<Crime> mCrimes;
 
         public CrimeAdapter(List<Crime> crimes) {
@@ -127,7 +137,7 @@ public class CrimeListFragment extends Fragment {
 //                item = R.layout.list_item_crime_police;
 //            }
 
-            return new CrimeHolder(layoutInflater, parent,  R.layout.list_item_crime);
+            return new CrimeHolder(layoutInflater, parent, R.layout.list_item_crime);
         }
 
         @Override
@@ -155,9 +165,24 @@ public class CrimeListFragment extends Fragment {
         public void setCrimes(List<Crime> crimes) {
             mCrimes = crimes;
         }
+
+        @Override
+        public void onItemMove(int fromPosition, int toPosition) {
+            // 交换位置
+            Collections.swap(mCrimes, fromPosition, toPosition);
+            notifyItemMoved(fromPosition, toPosition);
+        }
+
+        @Override
+        public void onItemDismiss(int position) {
+            // 移除数据
+            CrimeLab.get(getActivity()).removeCrime(mCrimes.get(position));
+            mCrimes.remove(position);
+            notifyItemRemoved(position);
+        }
     }
 
-    private void updateUI() {
+    public void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
@@ -231,8 +256,11 @@ public class CrimeListFragment extends Fragment {
     private void addCrime() {
         Crime crime = new Crime();
         CrimeLab.get(getActivity()).addCrime(crime);
-        Intent intent = CrimePaperActivity.newIntent(getActivity(), crime.getId());
-        startActivity(intent);
+//        Intent intent = CrimePaperActivity.newIntent(getActivity(), crime.getId());
+//        startActivity(intent);
+
+        updateUI();
+        mCallbacks.onCrimeSelected((crime));
     }
 
     private void updateSubTitle() {
@@ -258,4 +286,24 @@ public class CrimeListFragment extends Fragment {
         outState.putBoolean(SAVED_SUBTITLE_VISIBLE, mSubtitleVisible);
     }
 
+    private Callbacks mCallbacks;
+
+    /**
+     * Required interface for hosting activities
+     */
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
 }
